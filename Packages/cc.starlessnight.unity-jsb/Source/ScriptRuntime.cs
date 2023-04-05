@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
 using System.Reflection;
+using QuickJS.ThreadSafety;
+using UnityEditor;
 
 namespace QuickJS
 {
@@ -481,6 +483,10 @@ namespace QuickJS
             }
 
             var runtime = ScriptEngine.CreateRuntime();
+            
+            
+            // copy modules from the current runtime
+            runtime.AddModuleResolvers();
 
             runtime._isWorker = true;
             runtime.Initialize(new ScriptRuntimeArgs()
@@ -833,7 +839,9 @@ namespace QuickJS
 #endif
 
 #if UNITY_EDITOR
-            var isApplicationActive = UnityEditorInternal.InternalEditorUtility.isApplicationActive;
+            var isApplicationActive = IsMainThread() 
+                ? UnityEditorInternal.InternalEditorUtility.isApplicationActive
+                : EditorThreadSafeUtility.IsApplicationActive;
 #else
             var isApplicationActive = true;
 #endif
